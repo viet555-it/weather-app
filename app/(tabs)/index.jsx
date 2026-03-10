@@ -1,9 +1,12 @@
 import { View, Text, TextInput, Button, Image } from 'react-native';
 import { useState } from 'react';
+import { ActivityIndicator } from 'react-native';
 
 export default function HomeScreen() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSearch = async () => {
     // Implement search functionality here
@@ -12,14 +15,23 @@ export default function HomeScreen() {
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
     try {
+      setLoading(true);
+      setError(null);
+
       const response = await fetch(url);
       const data = await response.json();
 
-      console.log(data);
+      if (data.cod !== 200) {
+        setError("City not found. Please try again.");
+        setWeather(null);
+        return;
+      }
 
       setWeather(data);
     } catch (error) {
       console.error("Error fetching weather data:", error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -32,11 +44,22 @@ export default function HomeScreen() {
         onChangeText={setCity}
         style={{ height: 40, borderColor: 'gray', borderWidth: 1, width: '80%', marginBottom: 10, paddingHorizontal: 10 }}
       />
+
       <Button title="Search" onPress={handleSearch} />
 
-      {weather && (
-        <View style={{ marginTop: 20 }}>
-          <Text>City: {weather.name}</Text>
+      {loading && <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />}
+
+      {error && (
+        <Text style={{ color: "red", marginTop: 10 }}>
+          {error}
+        </Text>
+      )}
+
+      {!loading && weather && (
+        <View style={{ marginTop: 20, alignItems: 'center' }}>
+          <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+            {weather.name}
+          </Text>
 
           <Image
             source={{
@@ -44,8 +67,13 @@ export default function HomeScreen() {
             }}
             style={{ width: 100, height: 100 }}
           />
-          <Text>Temperature: {weather.main.temp} °C</Text>
-          <Text>Weather: {weather.weather[0].description}</Text>
+          
+          <Text style={{ fontSize: 40, fontWeight: "bold" }}>
+            {Math.round(weather.main.temp)}°C
+          </Text>
+          <Text style={{ fontSize: 18, fontStyle: "italic" }}>
+            {weather.weather[0].description}
+          </Text>
         </View>
       )}
     </View>
