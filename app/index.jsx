@@ -1,87 +1,86 @@
-import { View, Text, KeyBoardAvoidingView, TouchableWithoutFeedback } from 'react-native';
-import { useState } from 'react';
+import { useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
-import SearchBar from '../components/SearchBar';
-import WeatherCard from '../components/WeatherCard';
-import Loading from '../components/Loading';
-import ErroeMessage from '../components/ErrorMessage';
+import Loading from "../components/Loading";
+import SearchBar from "../components/SearchBar";
+import WeatherCard from "../components/WeatherCard";
 
-import { fetchWeather } from '../services/weatherService';
+import { fetchWeather } from "../services/weatherService";
 
 export default function HomeScreen() {
-  const [city, setCity] = useState("");
-  const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+    const [city, setCity] = useState("");
+    const [weather, setWeather] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-  const handleSearch = async () => {
-    // Implement search functionality here
-    try {
-      setLoading(true);
-      setError(null);
+    const handleSearch = async () => {
+        // Implement search functionality here
 
-      const data = await fetchWeather(city)
+        if (!city.trim()) {
+            Alert.alert("Input Error", "Please enter a city name.");
+            return;
+        }
 
-      if (data.cod !== 200) {
-        setError("City not found. Please try again.");
-        setWeather(null);
-        return;
-      }
+        try {
+            setLoading(true);
 
-      setWeather(data);
-    } catch (error) {
-      console.error("Error fetching weather data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+            const data = await fetchWeather(city);
 
-  return (
+            if (data.cod !== 200) {
+                Alert.alert("City not found", "Please try another city");
 
-    <SafeAreaView style={{ flex: 1 }}>
+                setWeather(null);
+                return;
+            }
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+            setWeather(data);
+            setCity("");
+        } catch (error) {
+            Alert.alert("Network Error", "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    return (
+        <SafeAreaView style={{ flex: 1 }}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView
+                        contentContainerStyle={{
+                            flexGrow: 1,
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}
+                    >
+                        <View style={{ alignItems: "center" }}>
+                            <Text style={{ fontSize: 22, marginBottom: 20 }}>
+                                Weather App
+                            </Text>
 
-          <ScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
+                            <SearchBar
+                                city={city}
+                                setCity={setCity}
+                                onSearch={handleSearch}
+                            />
 
-            <View style={{ alignItems: "center" }}>
+                            {loading && <Loading />}
 
-              <Text style={{ fontSize: 22, marginBottom: 20 }}>
-                Weather App
-              </Text>
-
-              <SearchBar
-                city={city}
-                setCity={setCity}
-                onSearch={handleSearch}
-              />
-
-              {loading && <Loading />}
-
-              {error && <ErrorMessage message={error} />}
-
-              {!loading && weather && <WeatherCard weather={weather} />}
-
-            </View>
-
-          </ScrollView>
-
-        </TouchableWithoutFeedback>
-
-      </KeyboardAvoidingView>
-
-    </SafeAreaView>
-
+                            {!loading && weather && (
+                                <WeatherCard weather={weather} />
+                            )}
+                        </View>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }

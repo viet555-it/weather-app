@@ -1,4 +1,4 @@
-import { View, TextInput, KeyBoardAvoidingView, Platform, Button } from 'react-native';
+import { View, TextInput, Button } from 'react-native';
 
 export default function SearchBar ({ city, setCity, onSearch }) {
 
@@ -8,6 +8,8 @@ export default function SearchBar ({ city, setCity, onSearch }) {
                 placeholder="Enter city name"
                 value={city}
                 onChangeText={setCity}
+                onSubmitEditing={onSearch}
+                returnKeyType="search"
                 style={{ height: 40, borderColor: 'gray', borderWidth: 1, width: '80%', marginBottom: 10, paddingHorizontal: 10 }}
             />
 
