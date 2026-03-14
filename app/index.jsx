@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, KeyBoardAvoidingView, TouchableWithoutFeedback } from 'react-native';
 import { useState } from 'react';
 
 import SearchBar from '../components/SearchBar';
@@ -37,20 +37,51 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Weather App!</Text>
 
-      <SearchBar
-        city={city}
-        setCity={setCity}
-        onSearch={handleSearch}
-      />
+    <SafeAreaView style={{ flex: 1 }}>
 
-      {loading && <Loading/>}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
 
-      {error && <ErroeMessage message={error} />}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-      {!loading && weather && <WeatherCard weather={weather} />}
-    </View>
-  )
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+
+            <View style={{ alignItems: "center" }}>
+
+              <Text style={{ fontSize: 22, marginBottom: 20 }}>
+                Weather App
+              </Text>
+
+              <SearchBar
+                city={city}
+                setCity={setCity}
+                onSearch={handleSearch}
+              />
+
+              {loading && <Loading />}
+
+              {error && <ErrorMessage message={error} />}
+
+              {!loading && weather && <WeatherCard weather={weather} />}
+
+            </View>
+
+          </ScrollView>
+
+        </TouchableWithoutFeedback>
+
+      </KeyboardAvoidingView>
+
+    </SafeAreaView>
+
+    );
 }
