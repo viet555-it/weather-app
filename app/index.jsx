@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
     Alert,
-    ImageBackground,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -15,6 +14,7 @@ import {
 import Loading from "../components/Loading";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
+import BackgroundImage from "../components/BackgroundImage";
 
 import { fetchWeather } from "../services/weatherService";
 
@@ -51,59 +51,8 @@ export default function HomeScreen() {
         }
     };
 
-    // Choose background image based on weather condition and whether it's currently day or night
-    const backgroundImage = (() => {
-        if (!weather) {
-            return require("../assets/images/clear.jpg");
-        }
-
-        const { dt, sys, weather: weatherArr = [] } = weather;
-        const sunrise = sys?.sunrise;
-        const sunset = sys?.sunset;
-
-        // Use OpenWeather timestamps (UTC) to decide day/night; fall back to icon-based detection.
-        const isNight =
-            typeof dt === "number" &&
-            typeof sunrise === "number" &&
-            typeof sunset === "number"
-                ? dt < sunrise || dt > sunset
-                : (weatherArr[0]?.icon ?? "").endsWith("n");
-
-        // Choose per-condition background; for nighttime it will use a generic night image unless you add
-        // more specific night images like "night-rain.jpg" or "night-clear.jpg".
-        const condition = weatherArr[0]?.main;
-
-        if (isNight) {
-            switch (condition) {
-                case "Rain":
-                    return require("../assets/images/night_rain.jpg");
-                case "Clouds":
-                    return require("../assets/images/night_clouds.jpg");
-                case "Snow":
-                    return require("../assets/images/night_snow.jpg");
-                default:
-                    return require("../assets/images/night.jpg");
-            }
-        }
-
-        switch (condition) {
-            case "Rain":
-                return require("../assets/images/rain.jpg");
-            case "Clouds":
-                return require("../assets/images/clouds.jpg");
-            case "Snow":
-                return require("../assets/images/snow.jpg");
-            default:
-                return require("../assets/images/clear.jpg");
-        }
-    })();
-
     return (
-        <ImageBackground
-            source={backgroundImage}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
+        <BackgroundImage weather={weather}>
             <SafeAreaView style={{ flex: 1 }}>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
@@ -140,6 +89,6 @@ export default function HomeScreen() {
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>
             </SafeAreaView>
-        </ImageBackground>
+        </BackgroundImage>
     );
 }
