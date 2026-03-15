@@ -51,9 +51,40 @@ export default function HomeScreen() {
         }
     };
 
-    // Set background image based on weather condition
+    // Choose background image based on weather condition and whether it's currently day or night
     const backgroundImage = (() => {
-        const condition = weather?.weather?.[0]?.main;
+        if (!weather) {
+            return require("../assets/images/clear.jpg");
+        }
+
+        const { dt, sys, weather: weatherArr = [] } = weather;
+        const sunrise = sys?.sunrise;
+        const sunset = sys?.sunset;
+
+        // Use OpenWeather timestamps (UTC) to decide day/night; fall back to icon-based detection.
+        const isNight =
+            typeof dt === "number" &&
+            typeof sunrise === "number" &&
+            typeof sunset === "number"
+                ? dt < sunrise || dt > sunset
+                : (weatherArr[0]?.icon ?? "").endsWith("n");
+
+        // Choose per-condition background; for nighttime it will use a generic night image unless you add
+        // more specific night images like "night-rain.jpg" or "night-clear.jpg".
+        const condition = weatherArr[0]?.main;
+
+        if (isNight) {
+            switch (condition) {
+                case "Rain":
+                    return require("../assets/images/night_rain.jpg");
+                case "Clouds":
+                    return require("../assets/images/night_clouds.jpg");
+                case "Snow":
+                    return require("../assets/images/night_snow.jpg");
+                default:
+                    return require("../assets/images/night.jpg");
+            }
+        }
 
         switch (condition) {
             case "Rain":
