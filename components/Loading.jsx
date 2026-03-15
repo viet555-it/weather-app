@@ -1,8 +1,11 @@
-import { ActivityIndicator } from "react-native-web";
+import { ActivityIndicator } from "react-native";
 
 export default function Loading() {
-
     return (
-        <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
+        <ActivityIndicator
+            size="large"
+            color="#0000ff"
+            style={{ marginTop: 20 }}
+        />
     );
 }

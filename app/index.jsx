@@ -1,10 +1,15 @@
 import { useState } from "react";
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Text,
-  TouchableWithoutFeedback,
-  View,
+    Alert,
+    ImageBackground,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 
 import Loading from "../components/Loading";
@@ -18,9 +23,8 @@ export default function HomeScreen() {
     const [weather, setWeather] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    // Search function to fetch weather data based on city input
     const handleSearch = async () => {
-        // Implement search functionality here
-
         if (!city.trim()) {
             Alert.alert("Input Error", "Please enter a city name.");
             return;
@@ -47,40 +51,64 @@ export default function HomeScreen() {
         }
     };
 
+    // Set background image based on weather condition
+    const backgroundImage = (() => {
+        const condition = weather?.weather?.[0]?.main;
+
+        switch (condition) {
+            case "Rain":
+                return require("../assets/images/rain.jpg");
+            case "Clouds":
+                return require("../assets/images/clouds.jpg");
+            case "Snow":
+                return require("../assets/images/snow.jpg");
+            default:
+                return require("../assets/images/clear.jpg");
+        }
+    })();
+
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-            >
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <ScrollView
-                        contentContainerStyle={{
-                            flexGrow: 1,
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}
-                    >
-                        <View style={{ alignItems: "center" }}>
-                            <Text style={{ fontSize: 22, marginBottom: 20 }}>
-                                Weather App
-                            </Text>
+        <ImageBackground
+            source={backgroundImage}
+            style={{ flex: 1 }}
+            resizeMode="cover"
+        >
+            <SafeAreaView style={{ flex: 1 }}>
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                >
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <ScrollView
+                            contentContainerStyle={{
+                                flexGrow: 1,
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            <View style={{ alignItems: "center" }}>
+                                <Text
+                                    style={{ fontSize: 22, marginBottom: 20 }}
+                                >
+                                    Weather App
+                                </Text>
 
-                            <SearchBar
-                                city={city}
-                                setCity={setCity}
-                                onSearch={handleSearch}
-                            />
+                                <SearchBar
+                                    city={city}
+                                    setCity={setCity}
+                                    onSearch={handleSearch}
+                                />
 
-                            {loading && <Loading />}
+                                {loading && <Loading />}
 
-                            {!loading && weather && (
-                                <WeatherCard weather={weather} />
-                            )}
-                        </View>
-                    </ScrollView>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+                                {!loading && weather && (
+                                    <WeatherCard weather={weather} />
+                                )}
+                            </View>
+                        </ScrollView>
+                    </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </ImageBackground>
     );
 }
