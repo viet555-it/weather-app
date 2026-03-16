@@ -1,12 +1,41 @@
-import { Button, Modal, Text, TextInput, View } from "react-native";
+import { useState } from "react";
+import { Alert, Button, Modal, Text, TextInput, View } from "react-native";
+
+import { fetchWeather } from "../services/weatherService";
 
 export default function CityPromptModal({
     visible,
     city,
     setCity,
-    onSubmit,
+    onSuccess,
     onCancel,
 }) {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!city.trim()) {
+            Alert.alert("Input Error", "Please enter a city name.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const data = await fetchWeather(city);
+
+            if (data.cod !== 200) {
+                Alert.alert("City not found", "Please try another city");
+                return;
+            }
+
+            setCity("");
+            onSuccess(data);
+        } catch (error) {
+            Alert.alert("Network Error", "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Modal
             visible={visible}
@@ -38,7 +67,7 @@ export default function CityPromptModal({
                         placeholder="City name"
                         value={city}
                         onChangeText={setCity}
-                        onSubmitEditing={onSubmit}
+                        onSubmitEditing={handleSubmit}
                         returnKeyType="done"
                         style={{
                             width: "100%",
@@ -56,8 +85,16 @@ export default function CityPromptModal({
                             width: "100%",
                         }}
                     >
-                        <Button title="Cancel" onPress={onCancel} />
-                        <Button title="Go" onPress={onSubmit} />
+                        <Button
+                            title="Cancel"
+                            onPress={onCancel}
+                            disabled={loading}
+                        />
+                        <Button
+                            title="Go"
+                            onPress={handleSubmit}
+                            disabled={loading}
+                        />
                     </View>
                 </View>
             </View>

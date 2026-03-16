@@ -55,12 +55,9 @@ export default function HomeScreen() {
         }
     };
 
-    // Handle the initial prompt when app loads
-    const handlePromptSubmit = async () => {
-        const success = await handleSearch();
-        if (success) {
-            setShowCityPrompt(false);
-        }
+    const handlePromptSuccess = (data) => {
+        setWeather(data);
+        setShowCityPrompt(false);
     };
 
     return (
@@ -69,7 +66,7 @@ export default function HomeScreen() {
                 visible={showCityPrompt}
                 city={city}
                 setCity={setCity}
-                onSubmit={handlePromptSubmit}
+                onSuccess={handlePromptSuccess}
                 onCancel={() => setShowCityPrompt(false)}
             />
 
