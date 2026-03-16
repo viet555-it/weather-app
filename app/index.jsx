@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-    Alert,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -17,46 +16,15 @@ import Loading from "../components/Loading";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
 
-import { fetchWeather } from "../services/weatherService";
+import useWeatherSearch from "../hooks/useWeatherSearch";
 
 export default function HomeScreen() {
     const [city, setCity] = useState("");
-    const [weather, setWeather] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [showCityPrompt, setShowCityPrompt] = useState(true);
 
-    // Search function to fetch weather data based on city input
-    const handleSearch = async () => {
-        if (!city.trim()) {
-            Alert.alert("Input Error", "Please enter a city name.");
-            return false;
-        }
+    const { weather, loading, search } = useWeatherSearch();
 
-        try {
-            setLoading(true);
-
-            const data = await fetchWeather(city);
-
-            if (data.cod !== 200) {
-                Alert.alert("City not found", "Please try another city");
-
-                setWeather(null);
-                return false;
-            }
-
-            setWeather(data);
-            setCity("");
-            return true;
-        } catch (error) {
-            Alert.alert("Network Error", "Something went wrong");
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handlePromptSuccess = (data) => {
-        setWeather(data);
+    const handlePromptSuccess = () => {
         setShowCityPrompt(false);
     };
 
@@ -93,7 +61,10 @@ export default function HomeScreen() {
                                 <SearchBar
                                     city={city}
                                     setCity={setCity}
-                                    onSearch={handleSearch}
+                                    onSearch={async () => {
+                                        const result = await search(city);
+                                        if (result) setCity("");
+                                    }}
                                 />
 
                                 {loading && <Loading />}
