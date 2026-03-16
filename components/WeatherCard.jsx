@@ -1,27 +1,25 @@
-import { Text, Image, View } from 'react-native';
+import { Text, TouchableOpacity, View } from "react-native";
 
-export default function WeatherCard({ weather }) {
+export default function WeatherCard({ weather, onPress }) {
+    const Container = onPress ? TouchableOpacity : View;
+
     return (
-        <View style={{ marginTop: 20, alignItems: 'center' }}>
-          
-          <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-            {weather.name}
-          </Text>
+        <Container
+            onPress={onPress}
+            style={{ marginTop: 20, alignItems: "center" }}
+            activeOpacity={0.8}
+        >
+            <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+                {weather.name}
+            </Text>
 
-          <Image
-            source={{
-              uri: `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`
-            }}
-            style={{ width: 100, height: 100 }}
-          />
-          
-          <Text style={{ fontSize: 40, fontWeight: "bold" }}>
-            {Math.round(weather.main.temp)}°C
-          </Text>
-          <Text style={{ fontSize: 18, fontStyle: "italic" }}>
-            {weather.weather[0].description}
-          </Text>
+            <Text style={{ fontSize: 40, fontWeight: "bold" }}>
+                {Math.round(weather.main.temp)}°C
+            </Text>
 
-        </View>
+            <Text style={{ fontSize: 18, fontStyle: "italic" }}>
+                {weather.weather[0].description}
+            </Text>
+        </Container>
     );
 }

@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
     Keyboard,
@@ -19,6 +20,7 @@ import WeatherCard from "../components/WeatherCard";
 import useWeatherSearch from "../hooks/useWeatherSearch";
 
 export default function HomeScreen() {
+    const router = useRouter();
     const [city, setCity] = useState("");
     const [showCityPrompt, setShowCityPrompt] = useState(true);
 
@@ -34,6 +36,7 @@ export default function HomeScreen() {
                 visible={showCityPrompt}
                 city={city}
                 setCity={setCity}
+                onSearch={search}
                 onSuccess={handlePromptSuccess}
                 onCancel={() => setShowCityPrompt(false)}
             />
@@ -70,7 +73,15 @@ export default function HomeScreen() {
                                 {loading && <Loading />}
 
                                 {!loading && weather && (
-                                    <WeatherCard weather={weather} />
+                                    <WeatherCard
+                                        weather={weather}
+                                        onPress={() =>
+                                            router.push({
+                                                pathname: "/WeatherDetail",
+                                                params: { city: weather.name },
+                                            })
+                                        }
+                                    />
                                 )}
                             </View>
                         </ScrollView>

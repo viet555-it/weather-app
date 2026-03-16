@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Alert, Button, Modal, Text, TextInput, View } from "react-native";
 
-import { fetchWeather } from "../services/weatherService";
-
 export default function CityPromptModal({
     visible,
     city,
     setCity,
+    onSearch,
     onSuccess,
     onCancel,
 }) {
@@ -20,17 +19,12 @@ export default function CityPromptModal({
 
         try {
             setLoading(true);
-            const data = await fetchWeather(city);
+            const data = await onSearch(city);
 
-            if (data.cod !== 200) {
-                Alert.alert("City not found", "Please try another city");
-                return;
-            }
+            if (!data) return;
 
             setCity("");
-            onSuccess(data);
-        } catch (error) {
-            Alert.alert("Network Error", "Something went wrong");
+            onSuccess();
         } finally {
             setLoading(false);
         }
