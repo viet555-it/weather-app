@@ -16,6 +16,8 @@ import CityPromptModal from "../components/CityPromptModal";
 import Loading from "../components/Loading";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
+import Forecast24h from "./Forecast24h";
+import Forecast7d from "./Forecast7d";
 
 import useWeatherSearch from "../hooks/useWeatherSearch";
 
@@ -73,15 +75,31 @@ export default function HomeScreen() {
                                 {loading && <Loading />}
 
                                 {!loading && weather && (
-                                    <WeatherCard
-                                        weather={weather}
-                                        onPress={() =>
-                                            router.push({
-                                                pathname: "/WeatherDetail",
-                                                params: { city: weather.name },
-                                            })
-                                        }
-                                    />
+                                    <>
+                                        <WeatherCard
+                                            weather={weather}
+                                            onPress={() =>
+                                                router.push({
+                                                    pathname: "/WeatherDetail",
+                                                    params: {
+                                                        city: weather.name,
+                                                    },
+                                                })
+                                            }
+                                        />
+
+                                        <Forecast24h
+                                            lat={weather.coord.lat}
+                                            lon={weather.coord.lon}
+                                            city={weather.name}
+                                        />
+
+                                        <Forecast7d
+                                            lat={weather.coord.lat}
+                                            lon={weather.coord.lon}
+                                            city={weather.name}
+                                        />
+                                    </>
                                 )}
                             </View>
                         </ScrollView>

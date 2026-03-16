@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert } from "react-native";
 
-import { fetchWeather } from "../services/weatherService";
+import { fetchWeatherByCity } from "../services/weatherService";
 
 export default function useWeatherSearch() {
     const [weather, setWeather] = useState(null);
@@ -16,9 +16,9 @@ export default function useWeatherSearch() {
         try {
             setLoading(true);
 
-            const data = await fetchWeather(city);
+            const data = await fetchWeatherByCity(city);
 
-            if (data.cod !== 200) {
+            if (Number(data.cod) !== 200) {
                 Alert.alert("City not found", "Please try another city");
                 setWeather(null);
                 return null;

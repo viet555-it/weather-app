@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
-import { fetchWeather } from "../services/weatherService";
+import { fetchWeatherByCity } from "../services/weatherService";
 
 export default function WeatherDetail() {
     const { city } = useLocalSearchParams();
@@ -16,7 +16,7 @@ export default function WeatherDetail() {
             setLoading(true);
             try {
                 if (!city) return;
-                const data = await fetchWeather(city);
+                const data = await fetchWeatherByCity(city);
                 setWeather(data);
             } finally {
                 setLoading(false);
@@ -100,6 +100,53 @@ export default function WeatherDetail() {
             <View style={{ width: "100%", marginBottom: 18 }}>
                 <Text style={{ fontWeight: "bold" }}>Wind speed:</Text>
                 <Text>{weather.wind.speed} m/s</Text>
+            </View>
+
+            <View
+                style={{
+                    width: "100%",
+                    marginTop: 24,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                }}
+            >
+                <Text
+                    style={{
+                        color: "blue",
+                        textDecorationLine: "underline",
+                    }}
+                    onPress={() =>
+                        router.push({
+                            pathname: "/Forecast24h",
+                            params: {
+                                lat: weather.coord.lat,
+                                lon: weather.coord.lon,
+                                city: weather.name,
+                            },
+                        })
+                    }
+                >
+                    24h Forecast
+                </Text>
+
+                <Text
+                    style={{
+                        color: "blue",
+                        textDecorationLine: "underline",
+                    }}
+                    onPress={() =>
+                        router.push({
+                            pathname: "/Forecast7d",
+                            params: {
+                                lat: weather.coord.lat,
+                                lon: weather.coord.lon,
+                                city: weather.name,
+                            },
+                        })
+                    }
+                >
+                    7-day Forecast
+                </Text>
             </View>
 
             <Text
