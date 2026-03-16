@@ -11,10 +11,11 @@ import {
     View,
 } from "react-native";
 
+import BackgroundImage from "../components/BackgroundImage";
+import CityPromptModal from "../components/CityPromptModal";
 import Loading from "../components/Loading";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
-import BackgroundImage from "../components/BackgroundImage";
 
 import { fetchWeather } from "../services/weatherService";
 
@@ -22,12 +23,13 @@ export default function HomeScreen() {
     const [city, setCity] = useState("");
     const [weather, setWeather] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showCityPrompt, setShowCityPrompt] = useState(true);
 
     // Search function to fetch weather data based on city input
     const handleSearch = async () => {
         if (!city.trim()) {
             Alert.alert("Input Error", "Please enter a city name.");
-            return;
+            return false;
         }
 
         try {
@@ -39,20 +41,38 @@ export default function HomeScreen() {
                 Alert.alert("City not found", "Please try another city");
 
                 setWeather(null);
-                return;
+                return false;
             }
 
             setWeather(data);
             setCity("");
+            return true;
         } catch (error) {
             Alert.alert("Network Error", "Something went wrong");
+            return false;
         } finally {
             setLoading(false);
         }
     };
 
+    // Handle the initial prompt when app loads
+    const handlePromptSubmit = async () => {
+        const success = await handleSearch();
+        if (success) {
+            setShowCityPrompt(false);
+        }
+    };
+
     return (
         <BackgroundImage weather={weather}>
+            <CityPromptModal
+                visible={showCityPrompt}
+                city={city}
+                setCity={setCity}
+                onSubmit={handlePromptSubmit}
+                onCancel={() => setShowCityPrompt(false)}
+            />
+
             <SafeAreaView style={{ flex: 1 }}>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
