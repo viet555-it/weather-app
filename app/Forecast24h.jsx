@@ -54,7 +54,7 @@ export default function Forecast24h({
         );
     }
 
-    if (!forecast || !forecast.hourly) {
+    if (!forecast || !forecast.list) {
         return (
             <View
                 style={{
@@ -80,7 +80,7 @@ export default function Forecast24h({
         );
     }
 
-    const entries = forecast.hourly.slice(0, 24);
+    const entries = forecast.list.slice(0, 24);
 
     return (
         <View style={{ flex: 1, padding: 16 }}>
@@ -103,7 +103,7 @@ export default function Forecast24h({
                         }}
                     >
                         <Text>{formatHour(item.dt)}</Text>
-                        <Text>{Math.round(item.temp)}°C</Text>
+                        <Text>{Math.round(item.main.temp)}°C</Text>
                         <Text style={{ fontStyle: "italic" }}>
                             {item.weather[0].description}
                         </Text>

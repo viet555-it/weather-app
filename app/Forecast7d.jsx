@@ -13,6 +13,58 @@ const formatDay = (unix) => {
     });
 };
 
+// Helper to group forecast data by day
+const groupForecastByDay = (list) => {
+    const dailyData = {};
+
+    list.forEach((item) => {
+        const date = new Date(item.dt * 1000);
+        // Get the start of the day in UTC to group consistently
+        const dayKey = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000;
+
+        if (!dailyData[dayKey]) {
+            dailyData[dayKey] = {
+                dt: dayKey,
+                temps: [],
+                humidities: [],
+                descriptions: [],
+            };
+        }
+        dailyData[dayKey].temps.push(item.main.temp_max, item.main.temp_min);
+        dailyData[dayKey].humidities.push(item.main.humidity);
+        dailyData[dayKey].descriptions.push(item.weather[0].description);
+    });
+
+    const processedDailyData = Object.values(dailyData).map((day) => {
+        const maxTemp = Math.max(...day.temps);
+        const minTemp = Math.min(...day.temps);
+        const avgHumidity = day.humidities.reduce((sum, h) => sum + h, 0) / day.humidities.length;
+
+        // Simple way to get a representative description: pick the most frequent or the first one
+        const descriptionCounts = {};
+        day.descriptions.forEach(desc => {
+            descriptionCounts[desc] = (descriptionCounts[desc] || 0) + 1;
+        });
+        const representativeDescription = Object.keys(descriptionCounts).sort((a, b) => descriptionCounts[b] - descriptionCounts[a])[0];
+
+        return {
+            dt: day.dt,
+            description: representativeDescription,
+            temp_max: maxTemp,
+            temp_min: minTemp,
+            humidity: avgHumidity,
+        };
+    });
+
+    // Sort by date to ensure correct order
+    processedDailyData.sort((a, b) => a.dt - b.dt);
+
+    // Take up to 7 days, excluding the current partial day if it's the first entry
+    // and we want full days. For simplicity, we'll just take the first 7 unique days.
+    return processedDailyData.slice(0, 7);
+};
+
+
 export default function Forecast7d({
     lat: propLat,
     lon: propLon,
@@ -27,6 +79,7 @@ export default function Forecast7d({
 
     const [forecast, setForecast] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [dailyForecasts, setDailyForecasts] = useState([]);
 
     useEffect(() => {
         const load = async () => {
@@ -34,6 +87,9 @@ export default function Forecast7d({
             try {
                 const data = await fetchForecast(lat, lon);
                 setForecast(data);
+                if (data && data.list) {
+                    setDailyForecasts(groupForecastByDay(data.list));
+                }
             } finally {
                 setLoading(false);
             }
@@ -58,7 +114,7 @@ export default function Forecast7d({
         );
     }
 
-    if (!forecast || !forecast.daily) {
+    if (!forecast || !dailyForecasts.length) {
         return (
             <View
                 style={{
@@ -84,7 +140,7 @@ export default function Forecast7d({
         );
     }
 
-    const entries = forecast.daily.slice(0, 7);
+    const entries = dailyForecasts;
 
     return (
         <View style={{ flex: 1, padding: 16 }}>
@@ -111,16 +167,16 @@ export default function Forecast7d({
                                 {formatDay(item.dt)}
                             </Text>
                             <Text style={{ fontStyle: "italic" }}>
-                                {item.weather[0].description}
+                                {item.description}
                             </Text>
                         </View>
 
                         <View style={{ alignItems: "flex-end" }}>
                             <Text>
-                                {Math.round(item.temp.max)}° /{" "}
-                                {Math.round(item.temp.min)}°
+                                {Math.round(item.temp_max)}° /{" "}
+                                {Math.round(item.temp_min)}°
                             </Text>
-                            <Text>Humidity {item.humidity}%</Text>
+                            <Text>Humidity {Math.round(item.humidity)}%</Text>
                         </View>
                     </View>
                 )}

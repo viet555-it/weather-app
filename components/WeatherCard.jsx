@@ -10,7 +10,7 @@ export default function WeatherCard({ weather, onPress }) {
             activeOpacity={0.8}
         >
             <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-                {weather.name}
+                {weather.location?.name || weather.name}
             </Text>
 
             <Text style={{ fontSize: 40, fontWeight: "bold" }}>

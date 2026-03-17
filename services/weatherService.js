@@ -35,7 +35,7 @@ export const fetchWeatherByCity = async (city) => {
 };
 
 export const fetchForecast = async (lat, lon) => {
-    const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${API_KEY}`;
+    const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
 
     const response = await fetch(url);
 
