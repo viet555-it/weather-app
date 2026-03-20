@@ -56,7 +56,7 @@ export default function HomeScreen() {
                                 alignItems: "center",
                             }}
                         >
-                            <View style={{ alignItems: "center" }}>
+                            <View style={{ alignItems: "center", width: '100%' }}>
                                 <SearchBar
                                     city={city}
                                     setCity={setCity}

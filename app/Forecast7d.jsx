@@ -102,18 +102,23 @@ export default function Forecast7d({
     if (!dailyForecasts.length) return null;
 
     return (
-        <View style={{ width: '100%', paddingHorizontal: 20, paddingBottom: 30 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+        <View style={{ width: '100%', paddingVertical: 20 }}>
+            <View style={{ paddingHorizontal: 20, marginBottom: 15 }}>
                 <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
                     7-Day Forecast
                 </Text>
             </View>
             <View style={{ 
+                marginHorizontal: 20,
                 backgroundColor: 'rgba(255,255,255,0.12)', 
-                borderRadius: 25, 
+                borderRadius: 28, 
                 padding: 10,
                 borderWidth: 1, 
-                borderColor: 'rgba(255,255,255,0.1)' 
+                borderColor: 'rgba(255,255,255,0.1)',
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 10,
             }}>
                 {dailyForecasts.map((item, index) => (
                     <View
@@ -122,32 +127,32 @@ export default function Forecast7d({
                             flexDirection: "row",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            paddingVertical: 12,
-                            paddingHorizontal: 15,
+                            paddingVertical: 14,
+                            paddingHorizontal: 12,
                             borderBottomWidth: index === dailyForecasts.length - 1 ? 0 : 1,
                             borderBottomColor: 'rgba(255,255,255,0.05)',
                         }}
                     >
-                        <View style={{ width: 100 }}>
+                        <View style={{ flex: 1.2 }}>
                             <Text style={{ fontWeight: "600", color: '#fff', fontSize: 14 }}>
                                 {index === 0 ? "Today" : formatDay(item.dt)}
                             </Text>
                         </View>
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1.5, justifyContent: 'flex-start' }}>
                             <Image 
                                 source={{ uri: getWeatherIcon(item.icon) }} 
-                                style={{ width: 35, height: 35 }}
+                                style={{ width: 38, height: 38 }}
                             />
-                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginLeft: 5, width: 60 }}>
+                            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, marginLeft: 8 }}>
                                 {item.main}
                             </Text>
                         </View>
 
-                        <View style={{ width: 90, alignItems: "flex-end" }}>
-                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                        <View style={{ flex: 1, alignItems: "flex-end" }}>
+                            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>
                                 {Math.round(item.temp_max)}°{"  "}
-                                <Text style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 'normal' }}>
+                                <Text style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'normal' }}>
                                     {Math.round(item.temp_min)}°
                                 </Text>
                             </Text>
