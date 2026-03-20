@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Button, Modal, Platform, Text, TextInput, View } from "react-native";
+import { Alert, Button, Keyboard, Modal, Platform, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 
 const showAlert = (title, message) => {
     if (Platform.OS === "web") {
@@ -29,7 +29,6 @@ export default function CityPromptModal({
             setLoading(true);
             const data = await onSearch(city);
 
-            // If onSearch fails, it already shows its own alert and returns null
             if (!data) {
                 return;
             }
@@ -50,61 +49,65 @@ export default function CityPromptModal({
             animationType="slide"
             onRequestClose={onCancel}
         >
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "rgba(0,0,0,0.4)",
-                }}
-            >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View
                     style={{
-                        width: "85%",
-                        backgroundColor: "white",
-                        borderRadius: 12,
-                        padding: 20,
+                        flex: 1,
+                        justifyContent: "center",
                         alignItems: "center",
+                        backgroundColor: "rgba(0,0,0,0.4)",
                     }}
                 >
-                    <Text style={{ fontSize: 18, marginBottom: 10 }}>
-                        Enter a city to get started
-                    </Text>
-                    <TextInput
-                        placeholder="City name"
-                        value={city}
-                        onChangeText={setCity}
-                        onSubmitEditing={handleSubmit}
-                        returnKeyType="done"
-                        style={{
-                            width: "100%",
-                            borderWidth: 1,
-                            borderColor: "#ccc",
-                            borderRadius: 6,
-                            padding: 10,
-                            marginBottom: 12,
-                        }}
-                    />
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            width: "100%",
-                        }}
-                    >
-                        <Button
-                            title="Cancel"
-                            onPress={onCancel}
-                            disabled={loading}
-                        />
-                        <Button
-                            title="Go"
-                            onPress={handleSubmit}
-                            disabled={loading}
-                        />
-                    </View>
+                    <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                        <View
+                            style={{
+                                width: "85%",
+                                backgroundColor: "white",
+                                borderRadius: 12,
+                                padding: 20,
+                                alignItems: "center",
+                            }}
+                        >
+                            <Text style={{ fontSize: 18, marginBottom: 10 }}>
+                                Enter a city to get started
+                            </Text>
+                            <TextInput
+                                placeholder="City name"
+                                value={city}
+                                onChangeText={setCity}
+                                onSubmitEditing={handleSubmit}
+                                returnKeyType="done"
+                                style={{
+                                    width: "100%",
+                                    borderWidth: 1,
+                                    borderColor: "#ccc",
+                                    borderRadius: 6,
+                                    padding: 10,
+                                    marginBottom: 12,
+                                }}
+                            />
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    width: "100%",
+                                }}
+                            >
+                                <Button
+                                    title="Cancel"
+                                    onPress={onCancel}
+                                    disabled={loading}
+                                />
+                                <Button
+                                    title="Go"
+                                    onPress={handleSubmit}
+                                    disabled={loading}
+                                />
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </View>
-            </View>
+            </TouchableWithoutFeedback>
         </Modal>
     );
 }
