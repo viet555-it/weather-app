@@ -1,6 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View, Image } from "react-native";
+import { ActivityIndicator, FlatList, Text, View, Image, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useUnit } from "../context/UnitContext";
 
 import { fetchForecast } from "../services/weatherService";
 
@@ -65,6 +67,7 @@ export default function Forecast7d({
     lon: propLon,
     city: propCity,
 }) {
+    const { formatTemp, unit, toggleUnit } = useUnit();
     const params = useLocalSearchParams();
     const router = useRouter();
 
@@ -103,10 +106,26 @@ export default function Forecast7d({
 
     return (
         <View style={{ width: '100%', paddingVertical: 20 }}>
-            <View style={{ paddingHorizontal: 20, marginBottom: 15 }}>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 20, marginBottom: 15, justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
                     7-Day Forecast
                 </Text>
+                <TouchableOpacity 
+                    onPress={toggleUnit}
+                    style={{ 
+                        backgroundColor: 'rgba(255,255,255,0.2)', 
+                        paddingHorizontal: 12, 
+                        paddingVertical: 6, 
+                        borderRadius: 15,
+                        flexDirection: 'row',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>
+                        °{unit}
+                    </Text>
+                    <Ionicons name="swap-horizontal" size={14} color="#fff" style={{ marginLeft: 5 }} />
+                </TouchableOpacity>
             </View>
             <View style={{ 
                 marginHorizontal: 20,
@@ -151,9 +170,9 @@ export default function Forecast7d({
 
                         <View style={{ flex: 1, alignItems: "flex-end" }}>
                             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>
-                                {Math.round(item.temp_max)}°{"  "}
+                                {formatTemp(item.temp_max)}°{"  "}
                                 <Text style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'normal' }}>
-                                    {Math.round(item.temp_min)}°
+                                    {formatTemp(item.temp_min)}°
                                 </Text>
                             </Text>
                         </View>

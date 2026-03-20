@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View, Image } from "react-native";
+import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 
+import Loading from "../components/Loading";
 import { fetchForecast } from "../services/weatherService";
 
 const formatHour = (unix) => {
@@ -16,6 +17,9 @@ const formatDay = (unix) => {
     return date.toLocaleDateString(undefined, { weekday: "short" });
 };
 
+import { Ionicons } from "@expo/vector-icons";
+import { useUnit } from "../context/UnitContext";
+
 const getWeatherIcon = (iconCode) => `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
 export default function Forecast24h({
@@ -23,6 +27,7 @@ export default function Forecast24h({
     lon: propLon,
     city: propCity,
 }) {
+    const { formatTemp, unit, toggleUnit } = useUnit();
     const params = useLocalSearchParams();
     const router = useRouter();
 
@@ -40,12 +45,7 @@ export default function Forecast24h({
                 const data = await fetchForecast(lat, lon);
                 if (data && data.list) {
                     const now = Math.floor(Date.now() / 1000);
-                    // Filter for only the items within the next 24 hours
-                    // We include items from the last hour just in case
                     const filtered = data.list.filter(item => item.dt >= now - 3600 && item.dt <= now + 24 * 3600);
-                    
-                    // If the API doesn't provide hourly data (e.g. 3-hour intervals), 
-                    // this will correctly show all points that fall within 24 hours.
                     setForecast({ ...data, list: filtered.length > 0 ? filtered : data.list.slice(0, 8) });
                 } else {
                     setForecast(data);
@@ -65,24 +65,42 @@ export default function Forecast24h({
     if (loading) {
         return (
             <View style={{ height: 160, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator size="small" color="#fff" />
+                <Loading />
             </View>
         );
     }
 
     if (!forecast || !forecast.list || forecast.list.length === 0) {
-        return null; // Don't show anything if no data
+        return null;
     }
 
     return (
         <View style={{ width: '100%', paddingVertical: 15 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 15 }}>
-                <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
-                    Next 24 Hours
-                </Text>
-                <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
-                    {city}
-                </Text>
+                <View>
+                    <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
+                        Next 24 Hours
+                    </Text>
+                    <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                        {city}
+                    </Text>
+                </View>
+                <TouchableOpacity
+                    onPress={toggleUnit}
+                    style={{
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 15,
+                        flexDirection: 'row',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>
+                        °{unit}
+                    </Text>
+                    <Ionicons name="swap-horizontal" size={14} color="#fff" style={{ marginLeft: 5 }} />
+                </TouchableOpacity>
             </View>
             <FlatList
                 data={forecast.list}
@@ -113,12 +131,12 @@ export default function Forecast24h({
                         <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginBottom: 2 }}>
                             {formatDay(item.dt)}
                         </Text>
-                        <Image 
-                            source={{ uri: getWeatherIcon(item.weather[0].icon) }} 
+                        <Image
+                            source={{ uri: getWeatherIcon(item.weather[0].icon) }}
                             style={{ width: 42, height: 42, marginVertical: 4 }}
                         />
                         <Text style={{ color: '#fff', fontSize: 19, fontWeight: 'bold' }}>
-                            {Math.round(item.main.temp)}°
+                            {formatTemp(item.main.temp)}°
                         </Text>
                         <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 4, textTransform: 'capitalize' }}>
                             {item.weather[0].main}

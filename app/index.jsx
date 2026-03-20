@@ -8,6 +8,7 @@ import {
     ScrollView,
     Text,
     TouchableWithoutFeedback,
+    TouchableOpacity,
     View,
 } from "react-native";
 
@@ -21,7 +22,11 @@ import Forecast7d from "./Forecast7d";
 
 import useWeatherSearch from "../hooks/useWeatherSearch";
 
+import { useUnit } from "../context/UnitContext";
+import { Ionicons } from "@expo/vector-icons";
+
 export default function HomeScreen() {
+    const { unit, toggleUnit } = useUnit();
     const router = useRouter();
     const [city, setCity] = useState("");
     const [showCityPrompt, setShowCityPrompt] = useState(true);
@@ -52,10 +57,28 @@ export default function HomeScreen() {
                         <ScrollView
                             contentContainerStyle={{
                                 flexGrow: 1,
-                                justifyContent: "center",
                                 alignItems: "center",
                             }}
                         >
+                            <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, marginTop: 10 }}>
+                                <TouchableOpacity 
+                                    onPress={toggleUnit}
+                                    style={{ 
+                                        backgroundColor: 'rgba(255,255,255,0.2)', 
+                                        paddingHorizontal: 15, 
+                                        paddingVertical: 8, 
+                                        borderRadius: 20,
+                                        flexDirection: 'row',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
+                                        °{unit}
+                                    </Text>
+                                    <Ionicons name="swap-horizontal" size={16} color="#fff" style={{ marginLeft: 8 }} />
+                                </TouchableOpacity>
+                            </View>
+
                             <View style={{ alignItems: "center", width: '100%' }}>
                                 <SearchBar
                                     city={city}

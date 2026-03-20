@@ -1,10 +1,14 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useUnit } from "../context/UnitContext";
 
 import { fetchWeatherByCity } from "../services/weatherService";
+import Loading from "../components/Loading";
 
 export default function WeatherDetail() {
+    const { formatTemp, unit, toggleUnit } = useUnit();
     const { city } = useLocalSearchParams();
     const router = useRouter();
 
@@ -33,14 +37,15 @@ export default function WeatherDetail() {
                     flex: 1,
                     justifyContent: "center",
                     alignItems: "center",
+                    backgroundColor: '#1e293b'
                 }}
             >
-                <ActivityIndicator size="large" />
+                <Loading />
             </View>
         );
     }
 
-    if (!weather || weather.cod !== 200) {
+    if (!weather || Number(weather.cod) !== 200) {
         return (
             <View
                 style={{
@@ -48,20 +53,17 @@ export default function WeatherDetail() {
                     justifyContent: "center",
                     alignItems: "center",
                     padding: 20,
+                    backgroundColor: '#1e293b'
                 }}
             >
-                <Text style={{ fontSize: 18, marginBottom: 10 }}>
+                <Text style={{ fontSize: 18, marginBottom: 10, color: '#fff' }}>
                     Unable to load weather for {city}.
                 </Text>
-                <Text
-                    style={{
-                        color: "blue",
-                        textDecorationLine: "underline",
-                    }}
-                    onPress={() => router.back()}
-                >
-                    Go back
-                </Text>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Text style={{ color: "#38bdf8", textDecorationLine: "underline" }}>
+                        Go back
+                    </Text>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -70,51 +72,58 @@ export default function WeatherDetail() {
         <ScrollView
             contentContainerStyle={{
                 flexGrow: 1,
-                justifyContent: "center",
                 alignItems: "center",
                 padding: 20,
+                backgroundColor: '#1e293b'
             }}
         >
-            <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8 }}>
+            <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="arrow-back" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#fff' }}>Details</Text>
+                <TouchableOpacity 
+                    onPress={toggleUnit}
+                    style={{ 
+                        backgroundColor: 'rgba(255,255,255,0.1)', 
+                        paddingHorizontal: 12, 
+                        paddingVertical: 6, 
+                        borderRadius: 15,
+                        flexDirection: 'row',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>
+                        °{unit}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
+            <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 8, color: '#fff' }}>
                 {weather.name}
             </Text>
-            <Text style={{ fontSize: 20, marginBottom: 20 }}>
+            <Text style={{ fontSize: 18, marginBottom: 30, color: 'rgba(255,255,255,0.7)', textTransform: 'capitalize' }}>
                 {weather.weather[0].description}
             </Text>
 
-            <View style={{ width: "100%", marginBottom: 18 }}>
-                <Text style={{ fontWeight: "bold" }}>Temperature:</Text>
-                <Text>{Math.round(weather.main.temp)}°C</Text>
-            </View>
-
-            <View style={{ width: "100%", marginBottom: 18 }}>
-                <Text style={{ fontWeight: "bold" }}>Feels like:</Text>
-                <Text>{Math.round(weather.main.feels_like)}°C</Text>
-            </View>
-
-            <View style={{ width: "100%", marginBottom: 18 }}>
-                <Text style={{ fontWeight: "bold" }}>Humidity:</Text>
-                <Text>{weather.main.humidity}%</Text>
-            </View>
-
-            <View style={{ width: "100%", marginBottom: 18 }}>
-                <Text style={{ fontWeight: "bold" }}>Wind speed:</Text>
-                <Text>{weather.wind.speed} m/s</Text>
+            <View style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 20 }}>
+                <DetailRow label="Temperature" value={`${formatTemp(weather.main.temp)}°${unit}`} icon="thermometer-outline" />
+                <DetailRow label="Feels like" value={`${formatTemp(weather.main.feels_like)}°${unit}`} icon="hand-right-outline" />
+                <DetailRow label="Humidity" value={`${weather.main.humidity}%`} icon="water-outline" />
+                <DetailRow label="Wind speed" value={`${weather.wind.speed} m/s`} icon="speedometer-outline" />
+                <DetailRow label="Pressure" value={`${weather.main.pressure} hPa`} icon="layers-outline" />
             </View>
 
             <View
                 style={{
                     width: "100%",
-                    marginTop: 24,
+                    marginTop: 30,
                     flexDirection: "row",
-                    justifyContent: "space-between",
+                    justifyContent: "space-around",
                 }}
             >
-                <Text
-                    style={{
-                        color: "blue",
-                        textDecorationLine: "underline",
-                    }}
+                <TouchableOpacity
+                    style={styles.navButton}
                     onPress={() =>
                         router.push({
                             pathname: "/Forecast24h",
@@ -126,14 +135,12 @@ export default function WeatherDetail() {
                         })
                     }
                 >
-                    24h Forecast
-                </Text>
+                    <Ionicons name="time-outline" size={20} color="#fff" />
+                    <Text style={styles.navButtonText}>24h Forecast</Text>
+                </TouchableOpacity>
 
-                <Text
-                    style={{
-                        color: "blue",
-                        textDecorationLine: "underline",
-                    }}
+                <TouchableOpacity
+                    style={styles.navButton}
                     onPress={() =>
                         router.push({
                             pathname: "/Forecast7d",
@@ -145,20 +152,38 @@ export default function WeatherDetail() {
                         })
                     }
                 >
-                    7-day Forecast
-                </Text>
+                    <Ionicons name="calendar-outline" size={20} color="#fff" />
+                    <Text style={styles.navButtonText}>7-day Forecast</Text>
+                </TouchableOpacity>
             </View>
-
-            <Text
-                style={{
-                    marginTop: 24,
-                    color: "blue",
-                    textDecorationLine: "underline",
-                }}
-                onPress={() => router.back()}
-            >
-                Back
-            </Text>
         </ScrollView>
     );
 }
+
+function DetailRow({ label, value, icon }) {
+    return (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name={icon} size={20} color="rgba(255,255,255,0.6)" style={{ marginRight: 10 }} />
+                <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16 }}>{label}</Text>
+            </View>
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>{value}</Text>
+        </View>
+    );
+}
+
+const styles = {
+    navButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#38bdf8',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 25,
+    },
+    navButtonText: {
+        color: '#fff',
+        marginLeft: 8,
+        fontWeight: 'bold'
+    }
+};
