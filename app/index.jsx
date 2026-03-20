@@ -57,12 +57,6 @@ export default function HomeScreen() {
                             }}
                         >
                             <View style={{ alignItems: "center" }}>
-                                <Text
-                                    style={{ fontSize: 22, marginBottom: 20 }}
-                                >
-                                    Weather App
-                                </Text>
-
                                 <SearchBar
                                     city={city}
                                     setCity={setCity}
@@ -82,7 +76,7 @@ export default function HomeScreen() {
                                                 router.push({
                                                     pathname: "/WeatherDetail",
                                                     params: {
-                                                        city: weather.name,
+                                                        city: weather.location?.name || weather.name,
                                                     },
                                                 })
                                             }
@@ -91,13 +85,13 @@ export default function HomeScreen() {
                                         <Forecast24h
                                             lat={weather.coord.lat}
                                             lon={weather.coord.lon}
-                                            city={weather.name}
+                                            city={weather.location?.name || weather.name}
                                         />
 
                                         <Forecast7d
                                             lat={weather.coord.lat}
                                             lon={weather.coord.lon}
-                                            city={weather.name}
+                                            city={weather.location?.name || weather.name}
                                         />
                                     </>
                                 )}

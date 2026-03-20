@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Text, View, Image } from "react-native";
 
 import { fetchForecast } from "../services/weatherService";
 
@@ -13,13 +13,14 @@ const formatDay = (unix) => {
     });
 };
 
+const getWeatherIcon = (iconCode) => `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
 // Helper to group forecast data by day
 const groupForecastByDay = (list) => {
     const dailyData = {};
 
     list.forEach((item) => {
         const date = new Date(item.dt * 1000);
-        // Get the start of the day in UTC to group consistently
         const dayKey = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000;
 
         if (!dailyData[dayKey]) {
@@ -27,12 +28,14 @@ const groupForecastByDay = (list) => {
                 dt: dayKey,
                 temps: [],
                 humidities: [],
+                icons: [],
                 descriptions: [],
             };
         }
         dailyData[dayKey].temps.push(item.main.temp_max, item.main.temp_min);
         dailyData[dayKey].humidities.push(item.main.humidity);
-        dailyData[dayKey].descriptions.push(item.weather[0].description);
+        dailyData[dayKey].icons.push(item.weather[0].icon);
+        dailyData[dayKey].descriptions.push(item.weather[0].main);
     });
 
     const processedDailyData = Object.values(dailyData).map((day) => {
@@ -40,30 +43,22 @@ const groupForecastByDay = (list) => {
         const minTemp = Math.min(...day.temps);
         const avgHumidity = day.humidities.reduce((sum, h) => sum + h, 0) / day.humidities.length;
 
-        // Simple way to get a representative description: pick the most frequent or the first one
-        const descriptionCounts = {};
-        day.descriptions.forEach(desc => {
-            descriptionCounts[desc] = (descriptionCounts[desc] || 0) + 1;
-        });
-        const representativeDescription = Object.keys(descriptionCounts).sort((a, b) => descriptionCounts[b] - descriptionCounts[a])[0];
-
+        // Most frequent icon/main
+        const freq = (arr) => arr.reduce((a, b, i, arr) => (arr.filter(v => v === a).length >= arr.filter(v => v === b).length ? a : b), null);
+        
         return {
             dt: day.dt,
-            description: representativeDescription,
+            icon: freq(day.icons),
+            main: freq(day.descriptions),
             temp_max: maxTemp,
             temp_min: minTemp,
             humidity: avgHumidity,
         };
     });
 
-    // Sort by date to ensure correct order
     processedDailyData.sort((a, b) => a.dt - b.dt);
-
-    // Take up to 7 days, excluding the current partial day if it's the first entry
-    // and we want full days. For simplicity, we'll just take the first 7 unique days.
     return processedDailyData.slice(0, 7);
 };
-
 
 export default function Forecast7d({
     lat: propLat,
@@ -77,7 +72,6 @@ export default function Forecast7d({
     const lon = propLon ?? Number(params.lon);
     const city = propCity ?? params.city;
 
-    const [forecast, setForecast] = useState(null);
     const [loading, setLoading] = useState(true);
     const [dailyForecasts, setDailyForecasts] = useState([]);
 
@@ -86,10 +80,11 @@ export default function Forecast7d({
             setLoading(true);
             try {
                 const data = await fetchForecast(lat, lon);
-                setForecast(data);
                 if (data && data.list) {
                     setDailyForecasts(groupForecastByDay(data.list));
                 }
+            } catch (error) {
+                console.error("Forecast7d error:", error);
             } finally {
                 setLoading(false);
             }
@@ -101,86 +96,65 @@ export default function Forecast7d({
     }, [lat, lon]);
 
     if (loading) {
-        return (
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                <ActivityIndicator size="large" />
-            </View>
-        );
+        return null; // Let 24h loading show something if needed, or index handles it
     }
 
-    if (!forecast || !dailyForecasts.length) {
-        return (
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: 20,
-                }}
-            >
-                <Text style={{ fontSize: 18, marginBottom: 10 }}>
-                    Unable to load 7-day forecast.
-                </Text>
-                <Text
-                    style={{
-                        color: "blue",
-                        textDecorationLine: "underline",
-                    }}
-                    onPress={() => router.back()}
-                >
-                    Go back
-                </Text>
-            </View>
-        );
-    }
-
-    const entries = dailyForecasts;
+    if (!dailyForecasts.length) return null;
 
     return (
-        <View style={{ flex: 1, padding: 16 }}>
-            <Text
-                style={{ fontSize: 22, fontWeight: "bold", marginBottom: 12 }}
-            >
-                7-Day Forecast — {city}
-            </Text>
-            <FlatList
-                data={entries}
-                keyExtractor={(item) => String(item.dt)}
-                renderItem={({ item }) => (
+        <View style={{ width: '100%', paddingHorizontal: 20, paddingBottom: 30 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
+                    7-Day Forecast
+                </Text>
+            </View>
+            <View style={{ 
+                backgroundColor: 'rgba(255,255,255,0.12)', 
+                borderRadius: 25, 
+                padding: 10,
+                borderWidth: 1, 
+                borderColor: 'rgba(255,255,255,0.1)' 
+            }}>
+                {dailyForecasts.map((item, index) => (
                     <View
+                        key={String(item.dt)}
                         style={{
                             flexDirection: "row",
                             justifyContent: "space-between",
-                            paddingVertical: 10,
-                            borderBottomWidth: 1,
-                            borderBottomColor: "#eee",
+                            alignItems: "center",
+                            paddingVertical: 12,
+                            paddingHorizontal: 15,
+                            borderBottomWidth: index === dailyForecasts.length - 1 ? 0 : 1,
+                            borderBottomColor: 'rgba(255,255,255,0.05)',
                         }}
                     >
-                        <View>
-                            <Text style={{ fontWeight: "bold" }}>
-                                {formatDay(item.dt)}
-                            </Text>
-                            <Text style={{ fontStyle: "italic" }}>
-                                {item.description}
+                        <View style={{ width: 100 }}>
+                            <Text style={{ fontWeight: "600", color: '#fff', fontSize: 14 }}>
+                                {index === 0 ? "Today" : formatDay(item.dt)}
                             </Text>
                         </View>
 
-                        <View style={{ alignItems: "flex-end" }}>
-                            <Text>
-                                {Math.round(item.temp_max)}° /{" "}
-                                {Math.round(item.temp_min)}°
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+                            <Image 
+                                source={{ uri: getWeatherIcon(item.icon) }} 
+                                style={{ width: 35, height: 35 }}
+                            />
+                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginLeft: 5, width: 60 }}>
+                                {item.main}
                             </Text>
-                            <Text>Humidity {Math.round(item.humidity)}%</Text>
+                        </View>
+
+                        <View style={{ width: 90, alignItems: "flex-end" }}>
+                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                                {Math.round(item.temp_max)}°{"  "}
+                                <Text style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 'normal' }}>
+                                    {Math.round(item.temp_min)}°
+                                </Text>
+                            </Text>
                         </View>
                     </View>
-                )}
-            />
+                ))}
+            </View>
         </View>
     );
 }

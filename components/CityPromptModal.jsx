@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Alert, Button, Modal, Text, TextInput, View } from "react-native";
+import { Alert, Button, Modal, Platform, Text, TextInput, View } from "react-native";
+
+const showAlert = (title, message) => {
+    if (Platform.OS === "web") {
+        alert(`${title}: ${message}`);
+    } else {
+        Alert.alert(title, message);
+    }
+};
 
 export default function CityPromptModal({
     visible,
@@ -13,7 +21,7 @@ export default function CityPromptModal({
 
     const handleSubmit = async () => {
         if (!city.trim()) {
-            Alert.alert("Input Error", "Please enter a city name.");
+            showAlert("Input Error", "Please enter a city name.");
             return;
         }
 
@@ -21,10 +29,15 @@ export default function CityPromptModal({
             setLoading(true);
             const data = await onSearch(city);
 
-            if (!data) return;
+            // If onSearch fails, it already shows its own alert and returns null
+            if (!data) {
+                return;
+            }
 
             setCity("");
             onSuccess();
+        } catch (error) {
+            showAlert("Error", "An unexpected error occurred.");
         } finally {
             setLoading(false);
         }

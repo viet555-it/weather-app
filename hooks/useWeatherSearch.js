@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 
 import { fetchWeatherByCity } from "../services/weatherService";
+
+const showAlert = (title, message) => {
+    if (Platform.OS === "web") {
+        alert(`${title}: ${message}`);
+    } else {
+        Alert.alert(title, message);
+    }
+};
 
 export default function useWeatherSearch() {
     const [weather, setWeather] = useState(null);
@@ -9,7 +17,7 @@ export default function useWeatherSearch() {
 
     const search = async (city) => {
         if (!city?.trim()) {
-            Alert.alert("Input Error", "Please enter a city name.");
+            showAlert("Input Error", "Please enter a city name.");
             return null;
         }
 
@@ -18,8 +26,8 @@ export default function useWeatherSearch() {
 
             const data = await fetchWeatherByCity(city);
 
-            if (Number(data.cod) !== 200) {
-                Alert.alert("City not found", "Please try another city");
+            if (data?.cod && Number(data.cod) !== 200) {
+                showAlert("City not found", "Please try another city");
                 setWeather(null);
                 return null;
             }
@@ -27,7 +35,7 @@ export default function useWeatherSearch() {
             setWeather(data);
             return data;
         } catch (error) {
-            Alert.alert("Network Error", "Something went wrong");
+            showAlert("Network Error", "Something went wrong");
             return null;
         } finally {
             setLoading(false);
