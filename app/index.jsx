@@ -17,8 +17,8 @@ import CityPromptModal from "../components/CityPromptModal";
 import Loading from "../components/Loading";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
-import Forecast24h from "./Forecast24h";
-import Forecast7d from "./Forecast7d";
+import Forecast24hWidget from "../components/Forecast24hWidget";
+import Forecast7dWidget from "../components/Forecast7dWidget";
 
 import useWeatherSearch from "../hooks/useWeatherSearch";
 
@@ -105,13 +105,13 @@ export default function HomeScreen() {
                                             }
                                         />
 
-                                        <Forecast24h
+                                        <Forecast24hWidget
                                             lat={weather.coord.lat}
                                             lon={weather.coord.lon}
                                             city={weather.location?.name || weather.name}
                                         />
 
-                                        <Forecast7d
+                                        <Forecast7dWidget
                                             lat={weather.coord.lat}
                                             lon={weather.coord.lon}
                                             city={weather.location?.name || weather.name}

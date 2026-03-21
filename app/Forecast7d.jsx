@@ -1,223 +1,35 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View, Image, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
+import { View, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useUnit } from "../context/UnitContext";
-
-import { fetchForecast } from "../services/weatherService";
-
-const formatDay = (unix) => {
-    const date = new Date(unix * 1000);
-    return date.toLocaleDateString(undefined, {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-    });
-};
-
-const getWeatherIcon = (iconCode) => `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-
-// Helper to group forecast data by day
-const groupForecastByDay = (list) => {
-    const dailyData = {};
-
-    list.forEach((item) => {
-        const date = new Date(item.dt * 1000);
-        const dayKey = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000;
-
-        if (!dailyData[dayKey]) {
-            dailyData[dayKey] = {
-                dt: dayKey,
-                temps: [],
-                humidities: [],
-                icons: [],
-                descriptions: [],
-            };
-        }
-        dailyData[dayKey].temps.push(item.main.temp_max, item.main.temp_min);
-        dailyData[dayKey].humidities.push(item.main.humidity);
-        dailyData[dayKey].icons.push(item.weather[0].icon);
-        dailyData[dayKey].descriptions.push(item.weather[0].main);
-    });
-
-    const processedDailyData = Object.values(dailyData).map((day) => {
-        const maxTemp = Math.max(...day.temps);
-        const minTemp = Math.min(...day.temps);
-        const avgHumidity = day.humidities.reduce((sum, h) => sum + h, 0) / day.humidities.length;
-
-        // Most frequent icon/main
-        const freq = (arr) => arr.reduce((a, b, i, arr) => (arr.filter(v => v === a).length >= arr.filter(v => v === b).length ? a : b), null);
-        
-        return {
-            dt: day.dt,
-            icon: freq(day.icons),
-            main: freq(day.descriptions),
-            temp_max: maxTemp,
-            temp_min: minTemp,
-            humidity: avgHumidity,
-        };
-    });
-
-    processedDailyData.sort((a, b) => a.dt - b.dt);
-    return processedDailyData.slice(0, 7);
-};
 
 import BackgroundImage from "../components/BackgroundImage";
+import Forecast7dWidget from "../components/Forecast7dWidget";
 
-export default function Forecast7d({
-    lat: propLat,
-    lon: propLon,
-    city: propCity,
-}) {
-    const { formatTemp, unit, toggleUnit } = useUnit();
+export default function Forecast7dScreen() {
     const params = useLocalSearchParams();
     const router = useRouter();
 
-    const isScreen = !propLat;
     const weather = params.weatherData ? JSON.parse(params.weatherData) : null;
+    const lat = Number(params.lat);
+    const lon = Number(params.lon);
+    const city = params.city;
 
-    const lat = propLat ?? Number(params.lat);
-    const lon = propLon ?? Number(params.lon);
-    const city = propCity ?? params.city;
-
-    const [loading, setLoading] = useState(true);
-    const [dailyForecasts, setDailyForecasts] = useState([]);
-
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            try {
-                const data = await fetchForecast(lat, lon);
-                if (data && data.list) {
-                    setDailyForecasts(groupForecastByDay(data.list));
-                }
-            } catch (error) {
-                console.error("Forecast7d error:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (lat && lon) {
-            load();
-        }
-    }, [lat, lon]);
-
-    if (loading) {
-        if (isScreen) {
-            return (
-                <BackgroundImage weather={weather}>
-                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                        <ActivityIndicator color="#fff" size="large" />
-                    </View>
-                </BackgroundImage>
-            );
-        }
-        return null;
-    }
-
-    if (!dailyForecasts.length) return null;
-
-    const content = (
-        <View style={{ width: '100%', paddingVertical: 20 }}>
-            <View style={{ flexDirection: 'row', paddingHorizontal: 20, marginBottom: 15, justifyContent: 'space-between', alignItems: 'center' }}>
-                <View>
-                    <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
-                        7-Day Forecast
-                    </Text>
-                    <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
-                        {city}
-                    </Text>
-                </View>
-                <TouchableOpacity 
-                    onPress={toggleUnit}
-                    style={{ 
-                        backgroundColor: 'rgba(255,255,255,0.2)', 
-                        paddingHorizontal: 12, 
-                        paddingVertical: 6, 
-                        borderRadius: 15,
-                        flexDirection: 'row',
-                        alignItems: 'center'
-                    }}
-                >
-                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>
-                        °{unit}
-                    </Text>
-                    <Ionicons name="swap-horizontal" size={14} color="#fff" style={{ marginLeft: 5 }} />
-                </TouchableOpacity>
-            </View>
-            <View style={{ 
-                marginHorizontal: 20,
-                backgroundColor: 'rgba(255,255,255,0.12)', 
-                borderRadius: 28, 
-                padding: 10,
-                borderWidth: 1, 
-                borderColor: 'rgba(255,255,255,0.1)',
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.1,
-                shadowRadius: 10,
-            }}>
-                {dailyForecasts.map((item, index) => (
-                    <View
-                        key={String(item.dt)}
-                        style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            paddingVertical: 14,
-                            paddingHorizontal: 12,
-                            borderBottomWidth: index === dailyForecasts.length - 1 ? 0 : 1,
-                            borderBottomColor: 'rgba(255,255,255,0.05)',
-                        }}
+    return (
+        <BackgroundImage weather={weather}>
+            <SafeAreaView style={{ flex: 1 }}>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                    <TouchableOpacity 
+                        onPress={() => router.back()} 
+                        style={{ paddingHorizontal: 20, marginBottom: 10, marginTop: 10 }}
                     >
-                        <View style={{ flex: 1.2 }}>
-                            <Text style={{ fontWeight: "600", color: '#fff', fontSize: 14 }}>
-                                {index === 0 ? "Today" : formatDay(item.dt)}
-                            </Text>
-                        </View>
-
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1.5, justifyContent: 'flex-start' }}>
-                            <Image 
-                                source={{ uri: getWeatherIcon(item.icon) }} 
-                                style={{ width: 38, height: 38 }}
-                            />
-                            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, marginLeft: 8 }}>
-                                {item.main}
-                            </Text>
-                        </View>
-
-                        <View style={{ flex: 1, alignItems: "flex-end" }}>
-                            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>
-                                {formatTemp(item.temp_max)}°{"  "}
-                                <Text style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'normal' }}>
-                                    {formatTemp(item.temp_min)}°
-                                </Text>
-                            </Text>
-                        </View>
-                    </View>
-                ))}
-            </View>
-        </View>
+                        <Ionicons name="arrow-back" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    {lat && lon ? (
+                        <Forecast7dWidget lat={lat} lon={lon} city={city} />
+                    ) : null}
+                </ScrollView>
+            </SafeAreaView>
+        </BackgroundImage>
     );
-
-    if (isScreen) {
-        return (
-            <BackgroundImage weather={weather}>
-                <SafeAreaView style={{ flex: 1 }}>
-                    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                        <TouchableOpacity 
-                            onPress={() => router.back()} 
-                            style={{ paddingHorizontal: 20, marginBottom: 10, marginTop: 10 }}
-                        >
-                            <Ionicons name="arrow-back" size={24} color="#fff" />
-                        </TouchableOpacity>
-                        {content}
-                    </ScrollView>
-                </SafeAreaView>
-            </BackgroundImage>
-        );
-    }
-
-    return content;
 }
+

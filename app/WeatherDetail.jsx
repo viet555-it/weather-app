@@ -8,7 +8,10 @@ import { fetchWeatherByCity } from "../services/weatherService";
 import Loading from "../components/Loading";
 import BackgroundImage from "../components/BackgroundImage";
 
+import DetailRow from "../components/DetailRow";
+
 export default function WeatherDetail() {
+
     const { formatTemp, unit, toggleUnit } = useUnit();
     const { city } = useLocalSearchParams();
     const router = useRouter();
@@ -174,18 +177,6 @@ export default function WeatherDetail() {
                 </ScrollView>
             </SafeAreaView>
         </BackgroundImage>
-    );
-}
-
-function DetailRow({ label, value, icon }) {
-    return (
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name={icon} size={22} color="rgba(255,255,255,0.8)" style={{ marginRight: 12 }} />
-                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 16, fontWeight: '500' }}>{label}</Text>
-            </View>
-            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>{value}</Text>
-        </View>
     );
 }
 
