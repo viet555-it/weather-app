@@ -1,9 +1,12 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, Text, TouchableOpacity, View, SafeAreaView } from "react-native";
 
 import Loading from "../components/Loading";
 import { fetchForecast } from "../services/weatherService";
+
+import { Ionicons } from "@expo/vector-icons";
+import { useUnit } from "../context/UnitContext";
 
 const formatHour = (unix) => {
     const date = new Date(unix * 1000);
@@ -17,10 +20,9 @@ const formatDay = (unix) => {
     return date.toLocaleDateString(undefined, { weekday: "short" });
 };
 
-import { Ionicons } from "@expo/vector-icons";
-import { useUnit } from "../context/UnitContext";
-
 const getWeatherIcon = (iconCode) => `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+import BackgroundImage from "../components/BackgroundImage";
 
 export default function Forecast24h({
     lat: propLat,
@@ -30,6 +32,9 @@ export default function Forecast24h({
     const { formatTemp, unit, toggleUnit } = useUnit();
     const params = useLocalSearchParams();
     const router = useRouter();
+
+    const isScreen = !propLat;
+    const weather = params.weatherData ? JSON.parse(params.weatherData) : null;
 
     const lat = propLat ?? Number(params.lat);
     const lon = propLon ?? Number(params.lon);
@@ -63,6 +68,15 @@ export default function Forecast24h({
     }, [lat, lon]);
 
     if (loading) {
+        if (isScreen) {
+             return (
+                <BackgroundImage weather={weather}>
+                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                        <Loading />
+                    </View>
+                </BackgroundImage>
+            );
+        }
         return (
             <View style={{ height: 160, justifyContent: "center", alignItems: "center" }}>
                 <Loading />
@@ -74,7 +88,7 @@ export default function Forecast24h({
         return null;
     }
 
-    return (
+    const content = (
         <View style={{ width: '100%', paddingVertical: 15 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 15 }}>
                 <View>
@@ -146,4 +160,24 @@ export default function Forecast24h({
             />
         </View>
     );
+
+    if (isScreen) {
+        return (
+            <BackgroundImage weather={weather}>
+                <SafeAreaView style={{ flex: 1 }}>
+                    <View style={{ flex: 1 }}>
+                        <TouchableOpacity 
+                            onPress={() => router.back()} 
+                            style={{ paddingHorizontal: 20, marginBottom: 20, marginTop: 10 }}
+                        >
+                            <Ionicons name="arrow-back" size={24} color="#fff" />
+                        </TouchableOpacity>
+                        {content}
+                    </View>
+                </SafeAreaView>
+            </BackgroundImage>
+        );
+    }
+
+    return content;
 }

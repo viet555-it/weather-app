@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View, Image, TouchableOpacity } from "react-native";
+import { ActivityIndicator, FlatList, Text, View, Image, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useUnit } from "../context/UnitContext";
 
@@ -62,6 +62,8 @@ const groupForecastByDay = (list) => {
     return processedDailyData.slice(0, 7);
 };
 
+import BackgroundImage from "../components/BackgroundImage";
+
 export default function Forecast7d({
     lat: propLat,
     lon: propLon,
@@ -70,6 +72,9 @@ export default function Forecast7d({
     const { formatTemp, unit, toggleUnit } = useUnit();
     const params = useLocalSearchParams();
     const router = useRouter();
+
+    const isScreen = !propLat;
+    const weather = params.weatherData ? JSON.parse(params.weatherData) : null;
 
     const lat = propLat ?? Number(params.lat);
     const lon = propLon ?? Number(params.lon);
@@ -99,17 +104,31 @@ export default function Forecast7d({
     }, [lat, lon]);
 
     if (loading) {
-        return null; // Let 24h loading show something if needed, or index handles it
+        if (isScreen) {
+            return (
+                <BackgroundImage weather={weather}>
+                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                        <ActivityIndicator color="#fff" size="large" />
+                    </View>
+                </BackgroundImage>
+            );
+        }
+        return null;
     }
 
     if (!dailyForecasts.length) return null;
 
-    return (
+    const content = (
         <View style={{ width: '100%', paddingVertical: 20 }}>
             <View style={{ flexDirection: 'row', paddingHorizontal: 20, marginBottom: 15, justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
-                    7-Day Forecast
-                </Text>
+                <View>
+                    <Text style={{ fontSize: 18, fontWeight: "bold", color: '#fff' }}>
+                        7-Day Forecast
+                    </Text>
+                    <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                        {city}
+                    </Text>
+                </View>
                 <TouchableOpacity 
                     onPress={toggleUnit}
                     style={{ 
@@ -181,4 +200,24 @@ export default function Forecast7d({
             </View>
         </View>
     );
+
+    if (isScreen) {
+        return (
+            <BackgroundImage weather={weather}>
+                <SafeAreaView style={{ flex: 1 }}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                        <TouchableOpacity 
+                            onPress={() => router.back()} 
+                            style={{ paddingHorizontal: 20, marginBottom: 10, marginTop: 10 }}
+                        >
+                            <Ionicons name="arrow-back" size={24} color="#fff" />
+                        </TouchableOpacity>
+                        {content}
+                    </ScrollView>
+                </SafeAreaView>
+            </BackgroundImage>
+        );
+    }
+
+    return content;
 }

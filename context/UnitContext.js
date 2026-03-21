@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 const UnitContext = createContext();
 
 export function UnitProvider({ children }) {
-    const [unit, setUnit] = useState('C'); // 'C' for Celsius, 'F' for Fahrenheit
+    const [unit, setUnit] = useState('C');
 
     const toggleUnit = () => {
         setUnit(prev => prev === 'C' ? 'F' : 'C');
