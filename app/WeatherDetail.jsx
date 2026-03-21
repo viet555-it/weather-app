@@ -106,8 +106,12 @@ export default function WeatherDetail() {
                     <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 8, color: '#fff', textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 }}>
                         {weather.location?.name || weather.name}
                     </Text>
-                    <Text style={{ fontSize: 18, marginBottom: 30, color: 'rgba(255,255,255,0.9)', textTransform: 'capitalize', fontWeight: '500' }}>
+                    <Text style={{ fontSize: 18, color: 'rgba(255,255,255,0.9)', textTransform: 'capitalize', fontWeight: '500' }}>
                         {weather.weather[0].description}
+                    </Text>
+                    
+                    <Text style={{ fontSize: 15, textAlign: 'center', color: 'rgba(255,255,255,0.7)', marginTop: 10, marginHorizontal: 20, marginBottom: 30, lineHeight: 22 }}>
+                        {`Today’s high is ${formatTemp(weather.main.temp_max)}°. The wind is blowing at ${weather.wind.speed} m/s and humidity is ${weather.main.humidity}%.`}
                     </Text>
 
                     <View style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
@@ -115,8 +119,12 @@ export default function WeatherDetail() {
                         <DetailRow label="Feels like" value={`${formatTemp(weather.main.feels_like)}°${unit}`} icon="hand-right-outline" />
                         <DetailRow label="Humidity" value={`${weather.main.humidity}%`} icon="water-outline" />
                         <DetailRow label="Wind speed" value={`${weather.wind.speed} m/s`} icon="speedometer-outline" />
+                        <DetailRow label="Visibility" value={`${(weather.visibility / 1000).toFixed(1)} km`} icon="eye-outline" />
                         <DetailRow label="Pressure" value={`${weather.main.pressure} hPa`} icon="layers-outline" />
+                        <DetailRow label="Sunrise" value={new Date(weather.sys.sunrise * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} icon="sunny-outline" />
+                        <DetailRow label="Sunset" value={new Date(weather.sys.sunset * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} icon="moon-outline" />
                     </View>
+
 
                     <View
                         style={{
