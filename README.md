@@ -1,50 +1,92 @@
-# Welcome to your Expo app 👋
+# Modern Weather App 🌤️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A beautiful, premium, and fully-featured weather application built with React Native and Expo. It provides real-time weather data, 24-hour and 7-day forecasts, all wrapped in a modern UI with dynamic backgrounds that react to the current weather and time of day.
 
-## Get started
+## ✨ Features
 
-1. Install dependencies
+- **Real-time Weather:** Current temperature, feels like, humidity, wind speed, visibility, and pressure.
+- **Dynamic Backgrounds:** The app's background automatically updates to reflect the current weather conditions (e.g., sunny, rainy, cloudy, snowy) and time of day (day/night).
+- **Unit Toggling:** Seamlessly switch between Celsius (°C) and Fahrenheit (°F) with a single tap. The entire app remembers and updates based on your preference.
+- **Search Functionality:** A sleek search bar to quickly find the weather in any city around the world, complete with error handling for invalid locations.
+- **Detailed Forecasts:** 
+  - **24-Hour Forecast:** Horizontal scrolling timeline of upcoming weather changes.
+  - **7-Day Forecast:** Detailed day-by-day breakdown with high/low temperatures.
+- **Premium UI/UX:** Styled with glassmorphism effects, shadows, custom vector icons, and a highly polished layout using `SafeAreaView` for a truly native feel on both iOS and Android.
 
+## 🛠 Tech Stack
+
+- **Framework:** React Native + [Expo](https://expo.dev)
+- **Routing:** [Expo Router](https://docs.expo.dev/router/introduction/) (File-based routing)
+- **Icons:** `@expo/vector-icons` (Ionicons)
+- **API:** [OpenWeatherMap API](https://openweathermap.org/api)
+
+## 📁 Project Structure
+
+The project has been carefully architected for readability and scalability:
+
+```text
+weather-app/
+├── app/                  # Expo Router screens (Pages)
+│   ├── index.jsx         # Homepage (Current weather + widgets)
+│   ├── WeatherDetail.jsx # Detailed stats screen (Sunrise/sunset, etc.)
+│   ├── Forecast24h.jsx   # Standalone 24h forecast screen
+│   ├── Forecast7d.jsx    # Standalone 7-day forecast screen
+│   └── _layout.jsx       # Root layout configuration (Hides default headers)
+├── components/           # Reusable UI Components
+│   ├── BackgroundImage.jsx   # Dynamic weather background wrapper
+│   ├── SearchBar.jsx         # Magnifying glass search input
+│   ├── WeatherCard.jsx       # Main summary card on the homepage
+│   ├── Forecast24hWidget.jsx # Embedded 24h timeline UI
+│   ├── Forecast7dWidget.jsx  # Embedded 7-day list UI
+│   ├── DetailRow.jsx         # Reusable row for weather attributes
+│   ├── CityPromptModal.jsx   # Initial location prompt on launch
+│   └── Loading.jsx           # Loading indicator
+├── context/              # Global State
+│   └── UnitContext.js    # manages Celsius/Fahrenheit toggle
+├── hooks/                # Custom React Hooks
+│   └── useWeatherSearch.js # Encapsulates search and loading logic
+└── services/             # API & External Integrations
+    └── weatherService.js # OpenWeatherMap API fetch calls
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js installed
+- Expo CLI or Expo Go app on your phone.
+
+### Installation
+
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   git clone <repository-url>
+   cd weather-app
+   ```
+
+2. Install the dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **API Key Setup:**
+   Ensure you have configured your OpenWeatherMap API key inside the `services/weatherService.js` file or via an environment variable.
 
+4. Start the development server:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+5. Open the app:
+   - Scan the QR code with your phone's camera (iOS) or the Expo Go app (Android).
+   - Press `i` to open in an iOS simulator (requires Xcode).
+   - Press `a` to open in an Android emulator (requires Android Studio).
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 💡 Architecture & Design Notes
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+This project was built with a strong focus on **separation of concerns**:
+- **Screens (`app/`)** handle routing parameters, navigation, and top-level layouts.
+- **Widgets (`components/`)** handle the actual UI rendering and data consumption.
+- **Services (`services/`)** are strictly responsible for network requests.
+- **Context (`context/`)** prevents prop-drilling for global settings like Temperature Units.
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Enjoy building your day around perfect forecasts! 🌦️
