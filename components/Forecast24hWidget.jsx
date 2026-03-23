@@ -1,21 +1,30 @@
+import { Image } from "expo-image";
 import { useEffect, useState } from "react";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import Loading from "./Loading";
 import { fetchForecast } from "../services/weatherService";
 import { useUnit } from "../context/UnitContext";
 
-const formatHour = (unix) => {
-    const date = new Date(unix * 1000);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+const formatHour = (unix, timezone = 0) => {
+    const date = new Date((unix + timezone) * 1000);
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
 };
 
-const formatDay = (unix) => {
-    const date = new Date(unix * 1000);
-    const today = new Date();
-    if (date.getDate() === today.getDate()) return "Today";
-    return date.toLocaleDateString(undefined, { weekday: "short" });
+const formatDay = (unix, timezone = 0) => {
+    const date = new Date((unix + timezone) * 1000);
+    const nowLocal = new Date((Math.floor(Date.now() / 1000) + timezone) * 1000);
+    
+    if (date.getUTCDate() === nowLocal.getUTCDate() && 
+        date.getUTCMonth() === nowLocal.getUTCMonth()) {
+        return "Today";
+    }
+    
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days[date.getUTCDay()];
 };
 
 const getWeatherIcon = (iconCode) => `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
@@ -113,14 +122,15 @@ export default function Forecast24hWidget({ lat, lon, city }) {
                         }}
                     >
                         <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>
-                            {formatHour(item.dt)}
+                            {formatHour(item.dt, forecast.city.timezone)}
                         </Text>
                         <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginBottom: 2 }}>
-                            {formatDay(item.dt)}
+                            {formatDay(item.dt, forecast.city.timezone)}
                         </Text>
                         <Image
                             source={{ uri: getWeatherIcon(item.weather[0].icon) }}
                             style={{ width: 42, height: 42, marginVertical: 4 }}
+                            contentFit="contain"
                         />
                         <Text style={{ color: '#fff', fontSize: 19, fontWeight: 'bold' }}>
                             {formatTemp(item.main.temp)}°

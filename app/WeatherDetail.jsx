@@ -10,6 +10,16 @@ import BackgroundImage from "../components/BackgroundImage";
 
 import DetailRow from "../components/DetailRow";
 
+const formatLocalTime = (unix, timezone) => {
+    if (unix === undefined || timezone === undefined) return "";
+    // Adjust unix timestamp by the timezone offset (seconds)
+    // Then use UTC methods to get the correct time for that offset
+    const date = new Date((unix + timezone) * 1000);
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+};
+
 export default function WeatherDetail() {
 
     const { formatTemp, unit, toggleUnit } = useUnit();
@@ -124,8 +134,8 @@ export default function WeatherDetail() {
                         <DetailRow label="Wind speed" value={`${weather.wind.speed} m/s`} icon="speedometer-outline" />
                         <DetailRow label="Visibility" value={`${(weather.visibility / 1000).toFixed(1)} km`} icon="eye-outline" />
                         <DetailRow label="Pressure" value={`${weather.main.pressure} hPa`} icon="layers-outline" />
-                        <DetailRow label="Sunrise" value={new Date(weather.sys.sunrise * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} icon="sunny-outline" />
-                        <DetailRow label="Sunset" value={new Date(weather.sys.sunset * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} icon="moon-outline" />
+                        <DetailRow label="Sunrise" value={formatLocalTime(weather.sys.sunrise, weather.timezone)} icon="sunny-outline" />
+                        <DetailRow label="Sunset" value={formatLocalTime(weather.sys.sunset, weather.timezone)} icon="moon-outline" />
                     </View>
 
 
